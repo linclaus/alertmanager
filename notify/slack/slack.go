@@ -80,6 +80,11 @@ type attachment struct {
 	MrkdwnIn   []string             `json:"mrkdwn_in,omitempty"`
 }
 
+// BeforeNotify implements the Notifier interface.
+func (n *Notifier) BeforeNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+}
+
 // Notify implements the Notifier interface.
 func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	var err error
@@ -184,4 +189,9 @@ func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error)
 	// https://api.slack.com/incoming-webhooks#handling_errors
 	// https://api.slack.com/changelog/2016-05-17-changes-to-errors-for-incoming-webhooks
 	return n.retrier.Check(resp.StatusCode, resp.Body)
+}
+
+// AfterNotify implements the Notifier interface.
+func (n *Notifier) AfterNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
 }

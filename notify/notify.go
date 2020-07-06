@@ -48,7 +48,23 @@ const MinTimeout = 10 * time.Second
 // returns an error if unsuccessful and a flag whether the error is
 // recoverable. This information is useful for a retry logic.
 type Notifier interface {
+	BeforeNotify(string, int, string, ...*types.Alert)
 	Notify(context.Context, ...*types.Alert) (bool, error)
+	AfterNotify(string, int, string, ...*types.Alert)
+}
+
+func StatusWebhook(conf config.NotifierConfig, name string, index int, status string, alerts ...*types.Alert) {
+	url := conf.StatusWebhook
+	if url == "" {
+		return
+	}
+	data := make(map[string]interface{})
+	data["alerts"] = alerts
+	data["name"] = name
+	data["index"] = index
+	data["status"] = status
+	jsonData, _ := json.Marshal(data)
+	http.Post(url, "application/json", bytes.NewReader(jsonData))
 }
 
 // Integration wraps a notifier and its configuration to be uniquely identified
@@ -70,9 +86,29 @@ func NewIntegration(notifier Notifier, rs ResolvedSender, name string, idx int) 
 	}
 }
 
+// BeforeNotify implements the Notifier interface.
+func (i *Integration) BeforeNotify(name string, index int, status string, alerts ...*types.Alert) {
+	i.notifier.BeforeNotify(name, index, status, alerts...)
+}
+
 // Notify implements the Notifier interface.
 func (i *Integration) Notify(ctx context.Context, alerts ...*types.Alert) (bool, error) {
-	return i.notifier.Notify(ctx, alerts...)
+	i.notifier.BeforeNotify(i.name, i.idx, "start", alerts...)
+	retry, err := i.notifier.Notify(ctx, alerts...)
+	defer func() {
+		if err != nil {
+			i.notifier.AfterNotify(i.name, i.idx, "failed", alerts...)
+		} else {
+			i.notifier.AfterNotify(i.name, i.idx, "success", alerts...)
+		}
+	}()
+
+	return retry, err
+}
+
+// AfterNotify implements the Notifier interface.
+func (i *Integration) AfterNotify(name string, index int, status string, alerts ...*types.Alert) {
+	i.notifier.AfterNotify(name, index, status, alerts...)
 }
 
 // SendResolved implements the ResolvedSender interface.

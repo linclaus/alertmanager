@@ -221,6 +221,11 @@ func (n *Notifier) notifyV2(
 	return n.retrier.Check(resp.StatusCode, resp.Body)
 }
 
+// BeforeNotify implements the Notifier interface.
+func (n *Notifier) BeforeNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+}
+
 // Notify implements the Notifier interface.
 //
 // https://v2.developer.pagerduty.com/docs/events-api-v2
@@ -271,4 +276,9 @@ func errDetails(status int, body io.Reader) string {
 		return ""
 	}
 	return fmt.Sprintf("%s: %s", pgr.Message, strings.Join(pgr.Errors, ","))
+}
+
+// AfterNotify implements the Notifier interface.
+func (n *Notifier) AfterNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
 }

@@ -62,6 +62,11 @@ const (
 	victorOpsEventResolve = "RECOVERY"
 )
 
+// BeforeNotify implements the Notifier interface.
+func (n *Notifier) BeforeNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+}
+
 // Notify implements the Notifier interface.
 func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 
@@ -85,6 +90,11 @@ func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error)
 	defer notify.Drain(resp)
 
 	return n.retrier.Check(resp.StatusCode, nil)
+}
+
+// AfterNotify implements the Notifier interface.
+func (n *Notifier) AfterNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
 }
 
 // Create the JSON payload to be sent to the VictorOps API.

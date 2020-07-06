@@ -80,6 +80,11 @@ type opsGenieCloseMessage struct {
 	Source string `json:"source"`
 }
 
+// BeforeNotify implements the Notifier interface.
+func (n *Notifier) BeforeNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+}
+
 // Notify implements the Notifier interface.
 func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	req, retry, err := n.createRequest(ctx, as...)
@@ -94,6 +99,11 @@ func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error)
 	defer notify.Drain(resp)
 
 	return n.retrier.Check(resp.StatusCode, resp.Body)
+}
+
+// AfterNotify implements the Notifier interface.
+func (n *Notifier) AfterNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
 }
 
 // Like Split but filter out empty strings.

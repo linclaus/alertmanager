@@ -79,6 +79,11 @@ func New(c *config.WechatConfig, t *template.Template, l log.Logger) (*Notifier,
 	return &Notifier{conf: c, tmpl: t, logger: l, client: client}, nil
 }
 
+// BeforeNotify implements the Notifier interface.
+func (n *Notifier) BeforeNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+}
+
 // Notify implements the Notifier interface.
 func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	key, err := notify.ExtractGroupKey(ctx)
@@ -198,4 +203,9 @@ func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error)
 	}
 
 	return false, errors.New(weResp.Error)
+}
+
+// AfterNotify implements the Notifier interface.
+func (n *Notifier) AfterNotify(name string, index int, status string, alerts ...*types.Alert) {
+	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
 }
