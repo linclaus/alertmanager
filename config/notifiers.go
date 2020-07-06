@@ -143,7 +143,8 @@ var (
 
 // NotifierConfig contains base options common across all notifier configurations.
 type NotifierConfig struct {
-	VSendResolved bool `yaml:"send_resolved" json:"send_resolved"`
+	VSendResolved bool   `yaml:"send_resolved" json:"send_resolved"`
+	StatusWebhook string `yaml:"status_webhook,omitempty" json:"status_webhook,omitempty"`
 }
 
 func (nc *NotifierConfig) SendResolved() bool {
