@@ -57,7 +57,7 @@ type Notifier interface {
 	AfterNotify(string, int, string, ...*types.Alert)
 }
 
-func StatusWebhook(conf config.NotifierConfig, name string, index int, status string, alerts ...*types.Alert) {
+func StatusWebhook(conf config.NotifierConfig, name string, value string, index int, status string, alerts ...*types.Alert) {
 	url := conf.StatusWebhook
 	if url == "" {
 		return
@@ -65,6 +65,7 @@ func StatusWebhook(conf config.NotifierConfig, name string, index int, status st
 	data := make(map[string]interface{})
 	data["alerts"] = alerts
 	data["name"] = name
+	data["value"] = value
 	data["index"] = index
 	data["status"] = status
 	jsonData, _ := json.Marshal(data)

@@ -75,7 +75,7 @@ type Message struct {
 
 // BeforeNotify implements the Notifier interface.
 func (n *Notifier) BeforeNotify(name string, index int, status string, alerts ...*types.Alert) {
-	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+	notify.StatusWebhook(n.conf.NotifierConfig, name, n.conf.URL.String(), index, status, alerts...)
 }
 
 // Notify implements the Notifier interface.
@@ -116,5 +116,5 @@ func (n *Notifier) Notify(ctx context.Context, alerts ...*types.Alert) (bool, er
 
 // AfterNotify implements the Notifier interface.
 func (n *Notifier) AfterNotify(name string, index int, status string, alerts ...*types.Alert) {
-	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+	notify.StatusWebhook(n.conf.NotifierConfig, name, n.conf.URL.String(), index, status, alerts...)
 }

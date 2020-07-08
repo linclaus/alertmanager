@@ -107,7 +107,7 @@ func (n *Email) auth(mechs string) (smtp.Auth, error) {
 
 // BeforeNotify implements the Notifier interface.
 func (n *Email) BeforeNotify(name string, index int, status string, alerts ...*types.Alert) {
-	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+	notify.StatusWebhook(n.conf.NotifierConfig, name, n.conf.To, index, status, alerts...)
 }
 
 // Notify implements the Notifier interface.
@@ -321,7 +321,7 @@ func (n *Email) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 
 // AfterNotify implements the Notifier interface.
 func (n *Email) AfterNotify(name string, index int, status string, alerts ...*types.Alert) {
-	notify.StatusWebhook(n.conf.NotifierConfig, name, index, status, alerts...)
+	notify.StatusWebhook(n.conf.NotifierConfig, name, n.conf.To, index, status, alerts...)
 }
 
 type loginAuth struct {
