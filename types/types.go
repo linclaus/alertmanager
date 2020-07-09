@@ -318,7 +318,7 @@ type Alert struct {
 	model.Alert
 
 	// The authoritative timestamp.
-	UUID      string
+	UUID      string `json:"uuid"`
 	UpdatedAt time.Time
 	Timeout   bool
 }
